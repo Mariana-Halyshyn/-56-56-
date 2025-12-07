@@ -1,0 +1,38 @@
+import Foundation
+
+// Current weather
+struct CurrentWeatherResponse: Codable {
+    let name: String
+    let weather: [WeatherElement]
+    let main: Main
+    let wind: Wind?
+}
+
+struct WeatherElement: Codable {
+    let id: Int
+    let main: String
+    let description: String
+    let icon: String
+}
+
+struct Main: Codable {
+    let temp: Double
+    let humidity: Int?
+}
+
+// Wind
+struct Wind: Codable {
+    let speed: Double?
+}
+
+// Forecast (3-hour steps)
+struct ForecastResponse: Codable {
+    let list: [ForecastItem]
+}
+
+struct ForecastItem: Codable {
+    let dt: TimeInterval
+    let main: Main
+    let weather: [WeatherElement]
+    let dt_txt: String?
+}

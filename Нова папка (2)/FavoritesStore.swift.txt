@@ -1,0 +1,29 @@
+import Foundation
+
+@MainActor
+class FavoritesStore: ObservableObject {
+    @Published private(set) var favorites: [String]
+
+    private let key = "favoriteCities_v1"
+
+    init() {
+        self.favorites = UserDefaults.standard.stringArray(forKey: key) ?? []
+    }
+
+    func add(_ city: String) {
+        let trimmed = city.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, !favorites.contains(where: { $0.caseInsensitiveCompare(trimmed) == .orderedSame }) else { return }
+        favorites.append(trimmed)
+        save()
+    }
+
+    func remove(_ city: String) {
+        favorites.removeAll { $0.caseInsensitiveCompare(city) == .orderedSame }
+        save()
+    }
+
+    private func save() {
+        UserDefaults.standard.set(favorites, forKey: key)
+    }
+}
+

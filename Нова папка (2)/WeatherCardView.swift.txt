@@ -1,0 +1,58 @@
+import SwiftUI
+
+struct WeatherCardView: View {
+    let current: CurrentWeatherResponse
+    var isFavorite: Bool
+    var toggleFavorite: () -> Void
+
+    var body: some View {
+        VStack(spacing: 12) {
+            HStack {
+                Text(current.name)
+                    .font(.title2).bold()
+                Spacer()
+                Button(action: toggleFavorite) {
+                    Image(systemName: isFavorite ? "heart.fill" : "heart")
+                        .foregroundColor(isFavorite ? .red : .primary)
+                }
+            }
+
+            HStack(alignment: .center) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("\(Int(current.main.temp))°C")
+                        .font(.system(size: 48)).bold()
+                    Text(current.weather.first?.description.capitalized ?? "")
+                        .font(.subheadline)
+                }
+                Spacer()
+                AsyncImage(url: iconURL(code: current.weather.first?.icon ?? "01d")) { phase in
+                    if let img = phase.image {
+                        img.resizable().aspectRatio(contentMode: .fit)
+                    } else {
+                        Image(systemName: "cloud.fill")
+                    }
+                }
+                .frame(width: 80, height: 80)
+            }
+
+            HStack(spacing: 20) {
+                smallMetric(title: "Вітер", value: "\(String(format: \"%.1f\", current.wind?.speed ?? 0)) m/s")
+                smallMetric(title: "Вологість", value: "\(current.main.humidity ?? 0)%")
+                smallMetric(title: "Опис", value: current.weather.first?.main ?? "-")
+            }
+        }
+        .padding()
+        .background(RoundedRectangle(cornerRadius: 16).fill(Color(.secondarySystemBackground)))
+    }
+
+    func smallMetric(title: String, value: String) -> some View {
+        VStack {
+            Text(title).font(.caption).foregroundColor(.secondary)
+            Text(value).font(.subheadline).bold()
+        }
+    }
+
+    func iconURL(code: String) -> URL? {
+        URL(string: "https://openweathermap.org/img/wn/\(code)@2x.png")
+    }
+}
