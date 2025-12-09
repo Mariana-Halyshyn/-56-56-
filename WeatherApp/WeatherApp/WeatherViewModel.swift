@@ -1,0 +1,70 @@
+//
+//  WeatherViewModel.swift
+//  WeatherApp
+//
+//  Created by ІПЗ-31/1 on 09.12.2025.
+//
+import Foundation
+import SwiftUI
+
+@MainActor
+class WeatherViewModel: ObservableObject {
+    @Published var city: String = "Kyiv"
+    @Published var current: CurrentWeatherResponse?
+    @Published var hourly: [ForecastItem] = []
+    @Published var errorMessage: String?
+    @Published var isLoading: Bool = false
+
+    let service = WeatherService.shared
+    let favorites: FavoritesStore
+
+    init(favorites: FavoritesStore) {
+        self.favorites = favorites
+        Task { await loadAll() }
+    }
+
+    func loadAll() async {
+        await fetchCurrent()
+        await fetchForecast()
+    }
+
+    func fetchCurrent() async {
+        isLoading = true
+        errorMessage = nil
+        do {
+            let resp = try await service.fetchCurrent(for: city)
+            current = resp
+        } catch {
+            errorMessage = "Не вдалося завантажити поточну погоду"
+            current = nil
+        }
+        isLoading = false
+    }
+
+    func fetchForecast() async {
+        do {
+            let list = try await service.fetchForecast(for: city)
+            // take upcoming ~12 items (~36 hours) or at least 8
+            hourly = Array(list.prefix(12))
+        } catch {
+            errorMessage = "Не вдалося завантажити прогноз"
+            hourly = []
+        }
+    }
+
+    func refresh() {
+        Task { await loadAll() }
+    }
+
+    func toggleFavorite() {
+        if favorites.favorites.contains(where: { $0.caseInsensitiveCompare(city) == .orderedSame }) {
+            favorites.remove(city)
+        } else {
+            favorites.add(city)
+        }
+    }
+
+    func isFavorite() -> Bool {
+        favorites.favorites.contains(where: { $0.caseInsensitiveCompare(city) == .orderedSame })
+    }
+}

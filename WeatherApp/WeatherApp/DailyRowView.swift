@@ -1,0 +1,32 @@
+//
+//  DailyRowView.swift
+//  WeatherApp
+//
+//  Created by ІПЗ-31/1 on 09.12.2025.
+//
+
+import SwiftUI
+
+struct DailyRowView: View {
+    let day: String
+    let minTemp: Int
+    let maxTemp: Int
+    let iconCode: String
+
+    var body: some View {
+        HStack {
+            Text(day).frame(width: 80, alignment: .leading)
+            Spacer()
+            AsyncImage(url: URL(string: "https://openweathermap.org/img/wn/\(iconCode)@2x.png")) { phase in
+                if let img = phase.image {
+                    img.resizable().frame(width: 36, height: 36)
+                } else {
+                    Image(systemName: "cloud")
+                }
+            }
+            Spacer()
+            Text("\(minTemp)° / \(maxTemp)°")
+        }
+        .padding(.vertical, 8)
+    }
+}
